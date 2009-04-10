@@ -2,6 +2,8 @@
 
 	* twelve.c: report 16 buttons instead of 8
 	  (twelveUpdate): changed mapping to correspond to ps3 controller
+	* usbconfig.h: changed PID and VID to shared objective develoment IDs
+	  and changed device name and vendor name
 
 
 --- v1.0 (Jan 22, 2007)
