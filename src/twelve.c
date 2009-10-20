@@ -52,7 +52,6 @@ static const char usbHidReportDescriptor[] PROGMEM = {
     0xc0              // END_COLLECTION
 };
 
-
 /*********** prototypes *************/
 static void twelveInit(void);
 static void twelveUpdate(void);
@@ -126,27 +125,61 @@ static void twelveUpdate(void)
 	if (data[0] & 0x08) { x = 0; }  // left
 	if (data[0] & 0x04) { x = 255; } // right
 
-	last_read_controller_bytes[0]=x;
-	last_read_controller_bytes[1]=y;
-	last_read_controller_bytes[2]=0;
-	last_read_controller_bytes[3]=0;
+	last_read_controller_bytes[0] = x;
+	last_read_controller_bytes[1] = y;
+	last_read_controller_bytes[2] = 0;
+	last_read_controller_bytes[3] = 0;
 
+        /*
+         * In digital mode the ps3 controller has the following mapping
+         *
+         * 0 -> square
+         * 1 -> x
+         * 2 -> circle
+         * 3 -> triangle
+         * 4 -> L1
+         * 5 -> R1
+         * 6 -> L2
+         * 7 -> R2
+         * 8 -> Select
+         * 9 -> Start
+         * 12 -> PS button
+         *
+         * Now the buttons are mapped in two bit arrays
+         * (last_read_controller_bytes[2] and last_read_controller_bytes[3])
+         * where [2] gives buttons 0-7 and [3] gives 8-15
+         * So we have the bit masks for each controller being:
+         *
+         * square:     0 -> [2] |= 0x01
+         * x:          1 -> [2] |= 0x02
+         * circle:     2 -> [2] |= 0x04
+         * triangle:   3 -> [2] |= 0x08
+         * L1:         4 -> [2] |= 0x10
+         * R1:         5 -> [2] |= 0x20
+         * L2:         6 -> [2] |= 0x40 
+         * R2:         7 -> [2] |= 0x80
+         *
+         * Select:     8 -> [3] |= 0x01
+         * Start:      9 -> [3] |= 0x02
+         * PS Button: 12 -> [3] |= 0x10
+         *
+         */
 	if (data[0] & 0x02) // btn 0
-		last_read_controller_bytes[2] |= 0x01;
+		last_read_controller_bytes[2] |= 0x01; // square 
 	if (data[0] & 0x01) // btn 1
-		last_read_controller_bytes[2] |= 0x02;
+		last_read_controller_bytes[2] |= 0x02; // x 
 	if (data[1] & 0x20) // btn 2
-		last_read_controller_bytes[2] |= 0x04;
+		last_read_controller_bytes[2] |= 0x04; // circle 
 	if (data[1] & 0x10) // btn 3
-		last_read_controller_bytes[2] |= 0x08;
+		last_read_controller_bytes[2] |= 0x08; // triangle 
 	if (data[1] & 0x08) // btn 4
-		last_read_controller_bytes[2] |= 0x10;
+		last_read_controller_bytes[2] |= 0x80; // R2 
 	if (data[1] & 0x04) // btn 5
-		last_read_controller_bytes[2] |= 0x20;
-	if (data[1] & 0x02) // btn 6
-		last_read_controller_bytes[3] |= 0x01;
+		last_read_controller_bytes[2] |= 0x20; // R1
+	if (data[1] & 0x02) // btn 6 
+		last_read_controller_bytes[3] |= 0x10; // PS Button 
 	if (data[1] & 0x01) // btn 7
-		last_read_controller_bytes[3] |= 0x02;
+		last_read_controller_bytes[3] |= 0x02; // Start 
 }
 
 static char twelveChanged(void)
